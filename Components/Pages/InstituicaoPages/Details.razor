@@ -1,0 +1,47 @@
+﻿@page "/instituicaos/details"
+@inject BlazorApp1.Data.AppDbContext DB
+@using BlazorApp1.Models
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>Instituicao</h4>
+    <hr />
+    @if (instituicao is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Nome</dt>
+            <dd class="col-sm-10">@instituicao.Nome</dd>
+            <dt class="col-sm-2">Endereco</dt>
+            <dd class="col-sm-10">@instituicao.Endereco</dd>
+        </dl>
+        <div>
+            <a href="@($"/instituicaos/edit?instituicaoid={instituicao.InstituicaoID}")">Edit</a> |
+            <a href="@($"/instituicaos")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    Instituicao? instituicao;
+
+    [SupplyParameterFromQuery]
+    public int InstituicaoID { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        instituicao = await DB.Instituicoes.FirstOrDefaultAsync(m => m.InstituicaoID == InstituicaoID);
+
+        if (instituicao is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

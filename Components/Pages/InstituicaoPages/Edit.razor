@@ -1,0 +1,91 @@
+﻿@page "/Instituicaos/edit"
+@inject BlazorApp1.Data.AppDbContext DB
+@using BlazorApp1.Models
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h4>Instituicao</h4>
+<hr />
+@if (Instituicao is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Instituicao" OnValidSubmit="UpdateInstituicao" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="Instituicao.InstituicaoID" value="@Instituicao.InstituicaoID" />
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Nome:</label>
+                    <InputText id="nome" @bind-Value="Instituicao.Nome" class="form-control" />
+                    <ValidationMessage For="() => Instituicao.Nome" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="endereco" class="form-label">Endereco:</label>
+                    <InputText id="endereco" @bind-Value="Instituicao.Endereco" class="form-control" />
+                    <ValidationMessage For="() => Instituicao.Endereco" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/instituicaos">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public int InstituicaoID { get; set; }
+
+    [SupplyParameterFromForm]
+    public Instituicao? Instituicao { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Instituicao ??= await DB.Instituicoes.FirstOrDefaultAsync(m => m.InstituicaoID == InstituicaoID);
+
+        if (Instituicao is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdateInstituicao()
+    {
+        DB.Attach(Instituicao!).State = EntityState.Modified;
+
+        try
+        {
+            await DB.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!InstituicaoExists(Instituicao!.InstituicaoID))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/instituicaos");
+    }
+
+    bool InstituicaoExists(int instituicaoid)
+    {
+        return DB.Instituicoes.Any(e => e.InstituicaoID == instituicaoid);
+    }
+}

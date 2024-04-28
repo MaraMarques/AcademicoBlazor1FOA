@@ -1,0 +1,45 @@
+﻿@page "/departamentos/details"
+@inject BlazorApp1.Data.AppDbContext DB
+@using BlazorApp1.Models
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>Departamento</h4>
+    <hr />
+    @if (departamento is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Nome</dt>
+            <dd class="col-sm-10">@departamento.Nome</dd>
+        </dl>
+        <div>
+            <a href="@($"/departamentos/edit?departamentoid={departamento.DepartamentoID}")">Edit</a> |
+            <a href="@($"/departamentos")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    Departamento? departamento;
+
+    [SupplyParameterFromQuery]
+    public long DepartamentoID { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        departamento = await DB.Departamentos.FirstOrDefaultAsync(m => m.DepartamentoID == DepartamentoID);
+
+        if (departamento is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

@@ -1,0 +1,86 @@
+﻿@page "/Departamentos/edit"
+@inject BlazorApp1.Data.AppDbContext DB
+@using BlazorApp1.Models
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h4>Departamento</h4>
+<hr />
+@if (Departamento is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Departamento" OnValidSubmit="UpdateDepartamento" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="Departamento.DepartamentoID" value="@Departamento.DepartamentoID" />
+                <div class="mb-3">
+                    <label for="nome" class="form-label">Nome:</label>
+                    <InputText id="nome" @bind-Value="Departamento.Nome" class="form-control" />
+                    <ValidationMessage For="() => Departamento.Nome" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/departamentos">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public long DepartamentoID { get; set; }
+
+    [SupplyParameterFromForm]
+    public Departamento? Departamento { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Departamento ??= await DB.Departamentos.FirstOrDefaultAsync(m => m.DepartamentoID == DepartamentoID);
+
+        if (Departamento is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdateDepartamento()
+    {
+        DB.Attach(Departamento!).State = EntityState.Modified;
+
+        try
+        {
+            await DB.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!DepartamentoExists(Departamento!.DepartamentoID))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/departamentos");
+    }
+
+    bool DepartamentoExists(long departamentoid)
+    {
+        return DB.Departamentos.Any(e => e.DepartamentoID == departamentoid);
+    }
+}
